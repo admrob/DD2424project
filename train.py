@@ -3,58 +3,34 @@
 import numpy as np
 from nltk.tokenize import word_tokenize
 from lstm_vae import create_lstm_vae, inference
+import keras
+import matplotlib.pyplot as plt
 
 
-def get_text_data(data_path, num_samples=1000):
+def get_text_data(num_samples=1000):
+            
+    # load data
+    (X_train, y_train), (X_test, y_test) = keras.datasets.mnist.load_data()
+    n_inputs, height, max_length = X_train.shape
+    encoder_input_data = np.zeros((n_inputs, max_length + 1, height), dtype="float32")
+    decoder_input_data = np.zeros((n_inputs, max_length + 1, height), dtype="float32")
+    encoder_input_data[:,:max_length,:] = np.swapaxes(X_train, 1, 2).copy()/255
+    decoder_input_data[:,1:,:] = np.swapaxes(X_train, 1, 2).copy()/255
 
-    # vectorize the data
-    input_texts = []
-    input_characters = set(["\t"])
-
-    with open(data_path, "r", encoding="utf-8") as f:
-        lines = f.read().lower().split("\n")
-
-    for line in lines[: min(num_samples, len(lines) - 1)]:
-
-        input_text, _ = line.split("\t")
-        input_text = word_tokenize(input_text)
-        input_text.append("<end>")
-
-        input_texts.append(input_text)
-
-        for char in input_text:
-            if char not in input_characters:
-                input_characters.add(char)
-
-    input_characters = sorted(list(input_characters))
-    num_encoder_tokens = len(input_characters)
-    max_encoder_seq_length = max([len(txt) for txt in input_texts]) + 1
-
-    print("Number of samples:", len(input_texts))
-    print("Number of unique input tokens:", num_encoder_tokens)
-    print("Max sequence length for inputs:", max_encoder_seq_length)
-
-    input_token_index = dict([(char, i) for i, char in enumerate(input_characters)])
-    reverse_input_char_index = dict((i, char) for char, i in input_token_index.items())
-
-    encoder_input_data = np.zeros((len(input_texts), max_encoder_seq_length, num_encoder_tokens), dtype="float32")
-    decoder_input_data = np.zeros((len(input_texts), max_encoder_seq_length, num_encoder_tokens), dtype="float32")
-
-    for i, input_text in enumerate(input_texts):
-        decoder_input_data[i, 0, input_token_index["\t"]] = 1.0
-
-        for t, char in enumerate(input_text):
-            encoder_input_data[i, t, input_token_index[char]] = 1.0
-            decoder_input_data[i, t + 1, input_token_index[char]] = 1.0
-
-    return max_encoder_seq_length, num_encoder_tokens, input_characters, input_token_index, reverse_input_char_index, \
-           encoder_input_data, decoder_input_data
+    return max_length + 1, height, encoder_input_data[:num_samples,:,:], decoder_input_data[:num_samples,:,:]
 
 
 if __name__ == "__main__":
+    
+    # load data
+    (X_train, y_train), (X_test, y_test) = keras.datasets.mnist.load_data()
+    n_inputs, height, max_length = X_train.shape
+    encoder_input_data = np.zeros((n_inputs, max_length + 1, height), dtype="float32")
+    decoder_input_data = np.zeros((n_inputs, max_length + 1, height), dtype="float32")
+    encoder_input_data[:,:max_length,:] = np.swapaxes(X_train, 1, 2).copy()/255
+    decoder_input_data[:,1:,:] = np.swapaxes(X_train, 1, 2).copy()/255
 
-    timesteps_max, enc_tokens, characters, char2id, id2char, x, x_decoder = get_text_data(num_samples=3000,
-                                                                                          data_path="data/fra.txt")
+    timesteps_max, enc_tokens, x, x_decoder = get_text_data(num_samples=3000)
 
     print(x.shape, "Creating model...")
 
@@ -77,7 +53,7 @@ if __name__ == "__main__":
 
 
     def decode(s):
-        return inference.decode_sequence(s, gen, stepper, input_dim, char2id, id2char, timesteps_max)
+        return inference.decode_sequence(s, gen, stepper, input_dim, timesteps_max)
 
 
     for _ in range(5):
@@ -94,9 +70,15 @@ if __name__ == "__main__":
         seq_to = np.random.normal(size=(latent_dim,))
         seq_to = m_to + std_to * seq_to
 
-        print("==  \t", " ".join([id2char[j] for j in np.argmax(x[id_from], axis=1)]), "==")
+        print("== from \t ==")
+        plt.imshow(x[id_from].T, cmap='Greys',  interpolation='nearest')
+        plt.show()
 
         for v in np.linspace(0, 1, 7):
-            print("%.2f\t" % (1 - v), decode(v * seq_to + (1 - v) * seq_from))
+            print("%.2f\t" % (1 - v))
+            plt.imshow(decode(v * seq_to + (1 - v) * seq_from).T, cmap='Greys',  interpolation='nearest')
+            plt.show()
 
-        print("==  \t", " ".join([id2char[j] for j in np.argmax(x[id_to], axis=1)]), "==")
+        print("== from \t ==")
+        plt.imshow(x[id_to].T, cmap='Greys',  interpolation='nearest')
+        plt.show()
