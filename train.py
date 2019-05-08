@@ -76,9 +76,11 @@ if __name__ == "__main__":
     print("Fitted, predicting...")
 
 
-    def decode(s):
-        return inference.decode_sequence(s, gen, stepper, input_dim, char2id, id2char, timesteps_max)
+    def decode(s, start_char = "\t"):
+        return inference.decode_sequence(s, gen, stepper, input_dim, char2id, id2char, timesteps_max, start_char = start_char)
 
+    def continue_seq(x_start):
+        return inference.continue_sequence(x_start, gen, stepper, input_dim, char2id, id2char, timesteps_max)
 
     for _ in range(5):
 
@@ -100,3 +102,18 @@ if __name__ == "__main__":
             print("%.2f\t" % (1 - v), decode(v * seq_to + (1 - v) * seq_from))
 
         print("==  \t", " ".join([id2char[j] for j in np.argmax(x[id_to], axis=1)]), "==")
+        
+    for _ in range(20):
+        id_sentence = np.random.randint(0, x.shape[0] - 1)
+        
+        n_words = np.sum(x[id_sentence])
+        n_kept = np.random.randint(n_words//2, n_words-1)
+        
+        new_x = np.zeros((x[id_sentence].shape))
+        new_x[:n_kept,:] = x[id_sentence,:n_kept,:]
+        
+        print("==  \t", " ".join([id2char[j] for j in np.argmax(new_x[:n_kept], axis=1)]), " ... \t\t ==")
+        
+        print("\t...\t", continue_seq(new_x))
+            
+        print("==  \t", " ".join([id2char[j] for j in np.argmax(x[id_sentence], axis=1)]), "==")
