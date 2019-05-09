@@ -3,7 +3,7 @@ latent_dim 191
 intermediate_dim 353
 epochs 40
 verbose 1
-num_samples 3000
+num_samples 1000
 data_type text
 dataset fra.txt
 train 0
