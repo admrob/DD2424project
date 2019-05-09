@@ -84,7 +84,7 @@ def main(params):
     if load:
         print("Loading model ... ")
         
-        vae = keras.models.load_model("models/vae_{}_{}.h5".format(dataname, num_samples))
+        #vae = keras.models.load_model("models/vae_{}_{}.h5".format(dataname, num_samples))
         enc = keras.models.load_model("models/encoder_{}_{}.h5".format(dataname, num_samples))
         gen = keras.models.load_model("models/generator_{}_{}.h5".format(dataname, num_samples))
         stepper = keras.models.load_model("models/stepper_{}_{}.h5".format(dataname, num_samples))
@@ -114,8 +114,8 @@ def main(params):
     def decode(s, start_char = "\t"):
         return inference.decode_sequence(s, gen, stepper, input_dim, char2id, id2char, timesteps_max, start_char = start_char)
 
-    def continue_seq(x_start):
-        return inference.continue_sequence(x_start, gen, stepper, input_dim, char2id, id2char, timesteps_max)
+    def continue_seq(x_start, states_value, h0 = False, sampling = False):
+        return inference.continue_sequence(x_start, states_value, h0, sampling, gen, stepper, input_dim, char2id, id2char, timesteps_max)
 
     for _ in range(5):
 
@@ -126,10 +126,10 @@ def main(params):
         m_to, std_to = enc.predict([[x[id_to]]])
 
         seq_from = np.random.normal(size=(latent_dim,))
-        seq_from = m_from + std_from * seq_from
+        seq_from = m_from #+ std_from * seq_from
 
         seq_to = np.random.normal(size=(latent_dim,))
-        seq_to = m_to + std_to * seq_to
+        seq_to = m_to #+ std_to * seq_to
 
         print("==  \t", " ".join([id2char[j] for j in np.argmax(x[id_from], axis=1)]), "==")
 
@@ -138,7 +138,7 @@ def main(params):
 
         print("==  \t", " ".join([id2char[j] for j in np.argmax(x[id_to], axis=1)]), "==")
         
-    for _ in range(20):
+    for _ in range(6):
         id_sentence = np.random.randint(0, x.shape[0] - 1)
         
         n_words = np.sum(x[id_sentence])
@@ -147,9 +147,18 @@ def main(params):
         new_x = np.zeros((x[id_sentence].shape))
         new_x[:n_kept,:] = x[id_sentence,:n_kept,:]
         
+        m_new, std_new = enc.predict([[x[id_from]]])
+        h_new = np.random.normal(size=(latent_dim,))
+        states_new = m_new + std_new * h_new
+        
         print("==  \t", " ".join([id2char[j] for j in np.argmax(new_x[:n_kept], axis=1)]), " ... \t\t ==")
         
-        print("\t...\t", continue_seq(new_x))
+        print("\t...\t", continue_seq(new_x, states_new))
+        print("\t...\t", continue_seq(new_x, states_new, h0 = True))
+        
+        print("\t...\t", continue_seq(new_x, states_new, sampling = True))
+        print("\t...\t", continue_seq(new_x, states_new, h0 = True, sampling = True))
+            
             
         print("==  \t", " ".join([id2char[j] for j in np.argmax(x[id_sentence], axis=1)]), "==")
         
