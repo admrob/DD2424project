@@ -48,6 +48,13 @@ if __name__ == "__main__":
     print("Training model...")
 
     vae.fit([x, x_decoder], x, epochs=epochs, verbose=1)
+    
+    print("Saving model ... ")
+    
+    vae.save("models/vae_mnist.h5")
+    enc.save("models/encoder_mnist.h5")
+    gen.save("models/generator_mnist.h5")
+    stepper.save("models/stepper_mnist.h5")
 
     print("Fitted, predicting...")
 

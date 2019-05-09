@@ -56,7 +56,7 @@ def create_lstm_vae(input_dim,
 
     # todo: not sure if this initialization is correct
     h_decoded, _, _ = decoder_h(decoder_words_input, initial_state=[z_reweighted, z_reweighted])
-    decoder_dense = TimeDistributed(Dense(input_dim, activation="softmax"))
+    decoder_dense = TimeDistributed(Dense(input_dim, activation="sigmoid"))
     decoded_onehot = decoder_dense(h_decoded)
 
     # end-to-end autoencoder
