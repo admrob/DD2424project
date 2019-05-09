@@ -3,6 +3,7 @@
 import numpy as np
 from nltk.tokenize import word_tokenize
 from lstm_vae import create_lstm_vae, inference
+import keras
 import sys, time
 
 
@@ -56,11 +57,16 @@ def main(params):
     
     num_samples = int(params['num_samples'])
     data_path = "data/" + params['dataset']
+    dataname = params['dataset'].split('.')[0]
     
     batch_size = int(params['batch_size'])
     latent_dim = int(params['latent_dim'])
     intermediate_dim = int(params['intermediate_dim'])
     epochs = int(params['epochs'])
+    
+    train = int(params['train'])
+    save = int(params['save'])
+    load = int(params['load'])
 
     timesteps_max, enc_tokens, characters, char2id, id2char, x, x_decoder = get_text_data(num_samples=num_samples,
                                                                                           data_path=data_path)
@@ -74,17 +80,27 @@ def main(params):
                                              batch_size=batch_size,
                                              intermediate_dim=intermediate_dim,
                                              latent_dim=latent_dim)
-    print("Training model...")
-
-    vae.fit([x, x_decoder], x, epochs=epochs, verbose=1)
+    if load:
+        print("Loading model ... ")
+        
+        vae = keras.models.load_model("models/vae_{}.h5".format(dataname))
+        enc = keras.models.load_model("models/encoder_{}.h5".format(dataname))
+        gen = keras.models.load_model("models/generator_{}.h5".format(dataname))
+        stepper = keras.models.load_model("models/stepper_{}.h5".format(dataname))
     
-    print("Saving model ... ")
+    if train:
+        print("Training model...")
     
-    vae.save("models/vae_mnist.h5")
-    enc.save("models/encoder_mnist.h5")
-    gen.save("models/generator_mnist.h5")
-    stepper.save("models/stepper_mnist.h5")
-
+        vae.fit([x, x_decoder], x, epochs=epochs, verbose=1)
+        
+        if save:
+            print("Saving model ... ")
+            
+            vae.save("models/vae_{}.h5".format(dataname))
+            enc.save("models/encoder_{}.h5".format(dataname))
+            gen.save("models/generator_{}.h5".format(dataname))
+            stepper.save("models/stepper_{}.h5".format(dataname))
+    
     print("Fitted, predicting...")
 
 

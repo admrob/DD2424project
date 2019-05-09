@@ -6,3 +6,6 @@ verbose 1
 num_samples 3000
 data_type text
 dataset fra.txt
+train 0
+save 0
+load 1
