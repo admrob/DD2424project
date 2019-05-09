@@ -5,6 +5,11 @@ from nltk.tokenize import word_tokenize
 from lstm_vae import create_lstm_vae, inference
 import keras
 import sys, time
+from keras.callbacks import CSVLogger
+
+from tensorflow import set_random_seed
+set_random_seed(1234)
+np.random.seed(1234)
 
 
 def get_text_data(data_path, num_samples=1000):
@@ -91,8 +96,9 @@ def main(params):
                                              batch_size=batch_size,
                                              intermediate_dim=intermediate_dim,
                                              latent_dim=latent_dim)
-    
-        vae.fit([x, x_decoder], x, epochs=epochs, verbose=1)
+        
+        csv_logger = CSVLogger('training_vae.log', separator=',', append=False)
+        vae.fit([x, x_decoder], x, epochs=epochs, verbose=1, callbacks=[csv_logger])
         
         if save:
             print("Saving model ... ")
