@@ -6,6 +6,7 @@ from keras.layers import Input, LSTM
 from keras.layers.core import Dense, Lambda
 from keras.layers.wrappers import TimeDistributed
 from keras.models import Model
+from keras.utils.generic_utils import get_custom_objects
 
 
 def create_lstm_vae(input_dim,
@@ -85,6 +86,7 @@ def create_lstm_vae(input_dim,
         loss = xent_loss + kl_loss
         return loss
 
+    get_custom_objects().update({"vae_loss": vae_loss})
     vae.compile(optimizer="adam", loss=vae_loss)
     vae.summary()
 

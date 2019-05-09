@@ -79,10 +79,10 @@ def main(params):
     if load:
         print("Loading model ... ")
         
-        #vae = keras.models.load_model("models/vae_{}.h5".format(dataname))
-        enc = keras.models.load_model("models/encoder_{}.h5".format(dataname))
-        gen = keras.models.load_model("models/generator_{}.h5".format(dataname))
-        stepper = keras.models.load_model("models/stepper_{}.h5".format(dataname))
+        vae = keras.models.load_model("models/vae_{}_{}.h5".format(dataname, num_samples))
+        enc = keras.models.load_model("models/encoder_{}_{}.h5".format(dataname, num_samples))
+        gen = keras.models.load_model("models/generator_{}_{}.h5".format(dataname, num_samples))
+        stepper = keras.models.load_model("models/stepper_{}_{}.h5".format(dataname, num_samples))
     
     if train:
         print("Training model...")
@@ -97,10 +97,10 @@ def main(params):
         if save:
             print("Saving model ... ")
             
-            vae.save("models/vae_{}.h5".format(dataname))
-            enc.save("models/encoder_{}.h5".format(dataname))
-            gen.save("models/generator_{}.h5".format(dataname))
-            stepper.save("models/stepper_{}.h5".format(dataname))
+            vae.save("models/vae_{}_{}.h5".format(dataname, num_samples))
+            enc.save("models/encoder_{}_{}.h5".format(dataname, num_samples))
+            gen.save("models/generator_{}_{}.h5".format(dataname, num_samples))
+            stepper.save("models/stepper_{}_{}.h5".format(dataname, num_samples))
     
     print("Fitted, predicting...")
 
