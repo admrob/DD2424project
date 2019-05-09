@@ -3,6 +3,7 @@
 import numpy as np
 from nltk.tokenize import word_tokenize
 from lstm_vae import create_lstm_vae, inference
+import sys, time
 
 
 def get_text_data(data_path, num_samples=1000):
@@ -51,19 +52,23 @@ def get_text_data(data_path, num_samples=1000):
            encoder_input_data, decoder_input_data
 
 
-if __name__ == "__main__":
+def main(params):
+    
+    num_samples = int(params['num_samples'])
+    data_path = "data/" + params['dataset']
+    
+    batch_size = int(params['batch_size'])
+    latent_dim = int(params['latent_dim'])
+    intermediate_dim = int(params['intermediate_dim'])
+    epochs = int(params['epochs'])
 
-    timesteps_max, enc_tokens, characters, char2id, id2char, x, x_decoder = get_text_data(num_samples=3000,
-                                                                                          data_path="data/fra.txt")
+    timesteps_max, enc_tokens, characters, char2id, id2char, x, x_decoder = get_text_data(num_samples=num_samples,
+                                                                                          data_path=data_path)
 
     print(x.shape, "Creating model...")
-
+    
     input_dim = x.shape[-1]
     timesteps = x.shape[-2]
-    batch_size = 1
-    latent_dim = 191
-    intermediate_dim = 353
-    epochs = 40
 
     vae, enc, gen, stepper = create_lstm_vae(input_dim,
                                              batch_size=batch_size,
@@ -72,6 +77,13 @@ if __name__ == "__main__":
     print("Training model...")
 
     vae.fit([x, x_decoder], x, epochs=epochs, verbose=1)
+    
+    print("Saving model ... ")
+    
+    vae.save("models/vae_mnist.h5")
+    enc.save("models/encoder_mnist.h5")
+    gen.save("models/generator_mnist.h5")
+    stepper.save("models/stepper_mnist.h5")
 
     print("Fitted, predicting...")
 
@@ -117,3 +129,23 @@ if __name__ == "__main__":
         print("\t...\t", continue_seq(new_x))
             
         print("==  \t", " ".join([id2char[j] for j in np.argmax(x[id_sentence], axis=1)]), "==")
+        
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        config_file_name = sys.argv[-1]
+    else:
+        config_file_name = 'config.txt'
+
+    with open(config_file_name, 'r') as f:
+        lines = f.readlines()
+        
+    params = {}
+
+    for line in lines:
+        line = line.split('\n')[0]
+        param_list = line.split(' ')
+        param_name = param_list[0]
+        param_value = param_list[1]
+        params[param_name] = param_value
+
+    main(params)
