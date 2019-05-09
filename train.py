@@ -75,21 +75,22 @@ def main(params):
     
     input_dim = x.shape[-1]
     timesteps = x.shape[-2]
-
-    vae, enc, gen, stepper = create_lstm_vae(input_dim,
-                                             batch_size=batch_size,
-                                             intermediate_dim=intermediate_dim,
-                                             latent_dim=latent_dim)
+    
     if load:
         print("Loading model ... ")
         
-        vae = keras.models.load_model("models/vae_{}.h5".format(dataname))
+        #vae = keras.models.load_model("models/vae_{}.h5".format(dataname))
         enc = keras.models.load_model("models/encoder_{}.h5".format(dataname))
         gen = keras.models.load_model("models/generator_{}.h5".format(dataname))
         stepper = keras.models.load_model("models/stepper_{}.h5".format(dataname))
     
     if train:
         print("Training model...")
+        
+        vae, enc, gen, stepper = create_lstm_vae(input_dim,
+                                             batch_size=batch_size,
+                                             intermediate_dim=intermediate_dim,
+                                             latent_dim=latent_dim)
     
         vae.fit([x, x_decoder], x, epochs=epochs, verbose=1)
         
