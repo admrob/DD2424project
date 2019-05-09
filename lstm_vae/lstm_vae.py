@@ -6,7 +6,7 @@ from keras.layers import Input, LSTM
 from keras.layers.core import Dense, Lambda
 from keras.layers.wrappers import TimeDistributed
 from keras.models import Model
-
+from keras.utils.generic_utils import get_custom_objects
 
 def create_lstm_vae(input_dim,
                     batch_size,  # we need it for sampling
@@ -84,8 +84,19 @@ def create_lstm_vae(input_dim,
         kl_loss = - 0.5 * K.mean(1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma))
         loss = xent_loss + kl_loss
         return loss
+    
+    def xent_loss(x, x_decoded_onehot):
+        xent_loss = objectives.categorical_crossentropy(x, x_decoded_onehot)
+        return xent_loss
+    
 
-    vae.compile(optimizer="adam", loss=vae_loss)
+    def kl_loss(x, x_decoded_onehot):
+        kl_loss = - 0.5 * K.mean(1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma))
+        return kl_loss
+    
+    get_custom_objects().update({"vae_loss": vae_loss, 'xent_loss': xent_loss, 'kl_loss':kl_loss})
+
+    vae.compile(optimizer="adam", loss=vae_loss, metrics = [xent_loss, kl_loss])
     vae.summary()
 
     return vae, encoder, generator, stepper
