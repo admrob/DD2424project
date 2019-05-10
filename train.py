@@ -22,10 +22,14 @@ def get_text_data(data_path, num_samples=1000):
         lines = f.read().lower().split("\n")
 
     for line in lines[: min(num_samples, len(lines) - 1)]:
+        if 'fra.txt' in data_path:
 
-        input_text, _ = line.split("\t")
-        input_text = word_tokenize(input_text)
-        input_text.append("<end>")
+            input_text, _ = line.split("\t")
+            input_text = word_tokenize(input_text)
+            input_text.append("<end>")
+        else:
+            input_text = line.split()
+            print(input_text)
 
         input_texts.append(input_text)
 
