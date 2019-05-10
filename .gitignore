@@ -108,3 +108,6 @@ VRNN/
 
 # config files
 config.txt
+
+# Mac files
+.DS_Store
