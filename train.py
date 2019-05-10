@@ -29,7 +29,6 @@ def get_text_data(data_path, num_samples=1000):
             input_text.append("<end>")
         else:
             input_text = line.split()
-            print(input_text)
 
         input_texts.append(input_text)
 
