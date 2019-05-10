@@ -8,6 +8,8 @@ Created on Wed May  8 10:07:33 2019
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import sys
+
 def loss_plot(path='training_vae.log'):
     plt.style.use('ggplot')
 
