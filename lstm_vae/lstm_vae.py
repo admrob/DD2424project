@@ -11,7 +11,8 @@ from keras.utils.generic_utils import get_custom_objects
 def create_lstm_vae(input_dim,
                     batch_size,  # we need it for sampling
                     intermediate_dim,
-                    latent_dim):
+                    latent_dim, 
+                    data_type = 'text'):
     """
     Creates an LSTM Variational Autoencoder (VAE).
 
@@ -56,7 +57,10 @@ def create_lstm_vae(input_dim,
 
     # todo: not sure if this initialization is correct
     h_decoded, _, _ = decoder_h(decoder_words_input, initial_state=[z_reweighted, z_reweighted])
-    decoder_dense = TimeDistributed(Dense(input_dim, activation="sigmoid"))
+    if data_type == 'text':
+        decoder_dense = TimeDistributed(Dense(input_dim, activation="softmax"))
+    elif data_type == 'mnist':
+        decoder_dense = TimeDistributed(Dense(input_dim, activation="sigmoid"))
     decoded_onehot = decoder_dense(h_decoded)
 
     # end-to-end autoencoder

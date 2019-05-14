@@ -106,7 +106,8 @@ def main(params):
         vae, enc, gen, stepper = create_lstm_vae(input_dim,
                                              batch_size=batch_size,
                                              intermediate_dim=intermediate_dim,
-                                             latent_dim=latent_dim)
+                                             latent_dim=latent_dim,
+                                             data_type = data_type)
         
         csv_logger = CSVLogger('training_vae.log', separator=',', append=False)
         vae.fit([x, x_decoder], x, epochs=epochs, verbose=1, callbacks=[csv_logger])
