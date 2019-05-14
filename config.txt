@@ -1,0 +1,11 @@
+batch_size 1
+latent_dim 191
+intermediate_dim 353
+epochs 40
+verbose 1
+num_samples 3000
+data_type mnist
+dataset fra.txt
+train 0
+save 0
+load 1
