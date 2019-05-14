@@ -132,7 +132,7 @@ def main(params):
 
 
     def decode(s, start_char = "\t"):
-        return inference.decode_sequence(s, gen, stepper, input_dim, timesteps_max, char2id, id2char, start_char = start_char)
+        return inference.decode_sequence(s, gen, stepper, input_dim, timesteps_max, char2id, id2char, start_char = start_char, data_type = data_type)
 
     def continue_seq(x_start, states_value, h0 = False, sampling = False):
         return inference.continue_sequence(x_start, states_value, h0, sampling, gen, stepper, input_dim, char2id, id2char, timesteps_max)
@@ -151,44 +151,55 @@ def main(params):
         seq_to = np.random.normal(size=(latent_dim,))
         seq_to = m_to #+ std_to * seq_to
 
-        print("== from \t ==")
-        plt.imshow(x[id_from].T, cmap='Greys',  interpolation='nearest')
-        plt.show()
-
-        for v in np.linspace(0, 1, 7):
-            print("%.2f\t" % (1 - v))
-            plt.imshow(decode(v * seq_to + (1 - v) * seq_from).T, cmap='Greys',  interpolation='nearest')
+        if data_type == 'mnist':
+            print("== from \t ==")
+            plt.imshow(x[id_from].T, cmap='Greys',  interpolation='nearest')
+            plt.grid(False)
             plt.show()
-
-        print("== to \t ==")
-        plt.imshow(x[id_to].T, cmap='Greys',  interpolation='nearest')
-        plt.show()
+    
+            for v in np.linspace(0, 1, 7):
+                print("%.2f\t" % (1 - v))
+                plt.imshow(decode(v * seq_to + (1 - v) * seq_from).T, cmap='Greys',  interpolation='nearest')
+                plt.grid(False)
+                plt.show()
+    
+            print("== to \t ==")
+            plt.imshow(x[id_to].T, cmap='Greys',  interpolation='nearest')
+            plt.grid(False)
+            plt.show()
         
-    """
-    for _ in range(6):
-        id_sentence = np.random.randint(0, x.shape[0] - 1)
-        
-        n_words = np.sum(x[id_sentence])
-        n_kept = np.random.randint(n_words//2, n_words-1)
-        
-        new_x = np.zeros((x[id_sentence].shape))
-        new_x[:n_kept,:] = x[id_sentence,:n_kept,:]
-        
-        m_new, std_new = enc.predict([[x[id_from]]])
-        h_new = np.random.normal(size=(latent_dim,))
-        states_new = m_new + std_new * h_new
-        
-        print("==  \t", " ".join([id2char[j] for j in np.argmax(new_x[:n_kept], axis=1)]), " ... \t\t ==")
-        
-        print("\t...\t", continue_seq(new_x, states_new))
-        print("\t...\t", continue_seq(new_x, states_new, h0 = True))
-        
-        print("\t...\t", continue_seq(new_x, states_new, sampling = True))
-        print("\t...\t", continue_seq(new_x, states_new, h0 = True, sampling = True))
+        elif data_type == 'text':
+            print("==  \t", " ".join([id2char[j] for j in np.argmax(x[id_from], axis=1)]), "==")
+    
+            for v in np.linspace(0, 1, 7):
+                print("%.2f\t" % (1 - v), decode(v * seq_to + (1 - v) * seq_from))
+    
+            print("==  \t", " ".join([id2char[j] for j in np.argmax(x[id_to], axis=1)]), "==")
+       
+    if data_type == 'text':
+        for _ in range(6):
+            id_sentence = np.random.randint(0, x.shape[0] - 1)
             
+            n_words = np.sum(x[id_sentence])
+            n_kept = np.random.randint(n_words//2, n_words-1)
             
-        print("==  \t", " ".join([id2char[j] for j in np.argmax(x[id_sentence], axis=1)]), "==")
-    """
+            new_x = np.zeros((x[id_sentence].shape))
+            new_x[:n_kept,:] = x[id_sentence,:n_kept,:]
+            
+            m_new, std_new = enc.predict([[x[id_from]]])
+            h_new = np.random.normal(size=(latent_dim,))
+            states_new = m_new + std_new * h_new
+            
+            print("==  \t", " ".join([id2char[j] for j in np.argmax(new_x[:n_kept], axis=1)]), " ... \t\t ==")
+            
+            print("\t...\t", continue_seq(new_x, states_new))
+            print("\t...\t", continue_seq(new_x, states_new, h0 = True))
+            
+            print("\t...\t", continue_seq(new_x, states_new, sampling = True))
+            print("\t...\t", continue_seq(new_x, states_new, h0 = True, sampling = True))
+                
+                
+            print("==  \t", " ".join([id2char[j] for j in np.argmax(x[id_sentence], axis=1)]), "==")
         
 if __name__ == "__main__":
     if len(sys.argv) > 1:
