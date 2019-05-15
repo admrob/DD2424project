@@ -84,13 +84,19 @@ def create_lstm_vae(input_dim,
     stepper = Model([decoder_words_input, input_h, input_c], [__decoded_onehot, __decoded_h, __decoded_c])
 
     def vae_loss(x, x_decoded_onehot):
-        xent_loss = objectives.categorical_crossentropy(x, x_decoded_onehot)
+        if data_type == 'text':
+            xent_loss = objectives.categorical_crossentropy(x, x_decoded_onehot)
+        elif data_type == 'mnist':
+            xent_loss = objectives.mean_squared_error(x, x_decoded_onehot)
         kl_loss = - 0.5 * K.mean(1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma))
         loss = xent_loss + kl_loss
         return loss
     
     def xent_loss(x, x_decoded_onehot):
-        xent_loss = objectives.categorical_crossentropy(x, x_decoded_onehot)
+        if data_type == 'text':
+            xent_loss = objectives.categorical_crossentropy(x, x_decoded_onehot)
+        elif data_type == 'mnist':
+            xent_loss = objectives.mean_squared_error(x, x_decoded_onehot)
         return xent_loss
     
 

@@ -144,7 +144,7 @@ def main(params):
         seq_to = m_to #+ std_to * seq_to
 
         if data_type == 'mnist':
-            print("== from \t ==")
+            print("== from \t ==")  
             plt.imshow(x[id_from].T, cmap='Greys',  interpolation='nearest')
             plt.grid(False)
             plt.show()
